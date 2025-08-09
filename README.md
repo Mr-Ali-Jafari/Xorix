@@ -84,7 +84,7 @@ You are free to use and modify the kernel source code under the condition that i
 ## More Information
 
 Visit the official website: [https://xorix.ir](https://xorix.ir)  
-Contact: info@xorix.ir
+Contact: XorixSoftware@gmail.com
 
 ---
 
