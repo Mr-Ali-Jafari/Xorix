@@ -17,7 +17,6 @@
 .endm
 
 
-# ----- تعریف روتین‌ها -----
 HandleInterruptRequest0x00:
     movb $0x00+IRQ_BASE, interruptnumber
     jmp int_bottom
