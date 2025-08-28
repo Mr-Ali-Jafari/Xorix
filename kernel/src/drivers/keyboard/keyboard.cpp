@@ -53,30 +53,31 @@ inline void printf(const char* str) {
 
 static const char* keymap[128] =
 {
-    0,  // 0x00
-    "ESC", // 0x01
-    "1","2","3","4","5","6","7","8","9","0","-","=","BACKSPACE", // 0x0E
-    "TAB", // 0x0F
-    "q","w","e","r","t","y","u","i","o","p","[","]","ENTER", // 0x1C
-    "CTRL", // 0x1D
-    "a","s","d","f","g","h","j","k","l",";","'","`",
-    "LSHIFT", // 0x2A
-    "\\","z","x","c","v","b","n","m",",",".","/",
-    "RSHIFT", // 0x36
-    "*", // keypad *
-    "ALT", // 0x38
-    "SPACE", // 0x39
+    0,          // 0x00
+    "ESC",      // 0x01
+    "1","2","3","4","5","6","7","8","9","0","-","=","BACKSPACE", // 0x02–0x0E
+    "TAB",      // 0x0F
+    "q","w","e","r","t","y","u","i","o","p","[","]","ENTER",     // 0x10–0x1C
+    "CTRL",     // 0x1D
+    "a","s","d","f","g","h","j","k","l",";","'","`",             // 0x1E–0x29
+    "LSHIFT",   // 0x2A
+    "\\","z","x","c","v","b","n","m",",",".","/",                // 0x2B–0x35
+    "RSHIFT",   // 0x36
+    "*",        // 0x37 keypad *
+    "ALT",      // 0x38
+    "SPACE",    // 0x39
     "CAPSLOCK", // 0x3A
-    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10", // 0x3B–0x44
-    "NUMLOCK","SCROLLLOCK", // 0x45–0x46
-    "HOME","UP","PGUP","-",
-    "LEFT","CENTER","RIGHT","+",
-    "END","DOWN","PGDN","INS","DEL", // 0x4F–0x53
-    0,0,0,
-    "F11","F12", // 0x57–0x58
-    0, // 0x59
-    0,0,0,0,0,0,0,0,0, // 0x5A–0x62
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // fill up to 0x7F
+    "F1","F2","F3","F4","F5","F6","F7","F8","F9","F10",          // 0x3B–0x44
+    "NUMLOCK","SCROLLLOCK",                                      // 0x45–0x46
+    "HOME","UP","PGUP","-",                                      // 0x47–0x4A keypad
+    "LEFT","CENTER","RIGHT","+",                                 // 0x4B–0x4E keypad
+    "END","DOWN","PGDN","INS","DEL",                             // 0x4F–0x53
+    0,0,0,                                                       // 0x54–0x56 (unused)
+    "F11","F12",                                                 // 0x57–0x58
+    0,0,0,0,0,0,0,0,0,                                           // 0x59–0x61
+    0,0,0,0,0,0,0,0,0,0,                                         // 0x62–0x6B
+    0,0,0,0,0,0,0,0,0,0,                                         // 0x6C–0x75
+    0,0,0,0,0,0,0,0,0,0,                                         // 0x76–0x7F
 };
 
 
