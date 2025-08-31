@@ -1,59 +1,61 @@
-# Xorix OS
+# Xorix Server Edition v1.0
 
-Xorix is a minimalist, original operating system kernel built from scratch with zero external dependencies. It’s designed for modern x86 hardware and provides a simple terminal interface and custom drivers.
-
----
-
-## Features
-
-- Zero-dependency kernel architecture
-- Custom keyboard and terminal drivers
-- Support for 32-bit x86 architecture
-- Simple command-line interface with built-in commands (help, clear, about, echo)
-- Basic VGA text output
-- Multiboot compatible
+Xorix Server Edition is a complete, minimal, multi-architecture operating system designed for server environments. Built from scratch with modern components including a full keyboard driver, user management, text editor, and single-command installation system.
 
 ---
 
-## Requirements
+## 🚀 Key Features
 
-- A 64-bit x86 CPU (runs in 32-bit mode)
-- Linux host for building
-- Required tools: `gcc`, `g++`, `nasm`, `binutils`, `grub`, `xorriso`
+### Core System
+- **Single-Command Installation**: `install xorix` - Complete automated installation
+- **Multi-Architecture Support**: x86 (32-bit), x86_64 (64-bit), ARM Cortex-A8
+- **Modern Keyboard Driver**: Full scancode support, modifiers, function keys, layouts
+- **User Management**: User accounts, passwords, admin mode, privilege escalation
+- **GRUB2 Bootloader**: BIOS and UEFI support with multiple boot options
+
+### Applications
+- **xbash Shell**: Unix-like commands, scripting, command history, environment variables
+- **xnano Editor**: Lightweight nano-like text editor for configuration files
+- **Filesystem**: Simple but robust filesystem with permissions and ownership
+- **Installation System**: Automated partitioning, formatting, and system setup
+
+### Architecture Support
+- **x86**: 32-bit Intel/AMD processors
+- **x86_64**: 64-bit processors with long mode support  
+- **ARM**: Cortex-A8 and compatible ARM processors
 
 ---
 
-## Setup
+## 📋 Requirements
 
-Install the dependencies by running the setup script:
+### Minimum System Requirements
+- **RAM**: 512MB minimum
+- **Storage**: 512MB for installation
+- **Architecture**: x86, x86_64, or ARM Cortex-A8
+- **Firmware**: BIOS or UEFI
 
+### Build Requirements
+- Linux host system for building
+- Cross-compilation toolchain (i686-elf-gcc, x86_64-elf-gcc, arm-none-eabi-gcc)
+- Build tools: `gcc`, `make`, `grub-mkrescue`, `xorriso`
+
+---
+
+## 🛠️ Quick Start
+
+### 1. Build System Setup
 ```bash
-./setup_dependencies.sh
+# Install dependencies
+sudo apt install build-essential grub-pc-bin grub-common xorriso
+
+# Set up development environment
+make dev-setup
 ```
 
----
-
-## Building
-
-To build the kernel binary, run:
-
+### 2. Build for Your Architecture
 ```bash
-make
-```
-
-This will compile the source and generate `xorix.bin`.
-
----
-
-## Creating a Bootable ISO
-
-To create a bootable ISO image, run:
-
-```bash
-make xorix.iso
-```
-
----
+# Build x86 kernel and ISO
+make ARCH=x86 iso
 
 ## Running on Different Platforms
 
