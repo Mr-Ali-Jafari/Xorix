@@ -8,7 +8,7 @@ void* operator new(unsigned long size)
         return 0; 
     void* result = heap_current;
     heap_current += size;
-    while((uint32_t)heap_current % 4 != 0)
+    while(((unsigned long)heap_current) % 4 != 0)
         heap_current++;
     return result;
 }

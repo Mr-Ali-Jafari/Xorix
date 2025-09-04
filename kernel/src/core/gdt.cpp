@@ -5,15 +5,32 @@ GlobalDescriptorTable::GlobalDescriptorTable()
       codeSegmentSelector(0, 64 * 1024 * 1024, 0x9A),
       dataSegmentSelector(0, 64 * 1024 * 1024, 0x92)
 {
-    uint8_t gdtr[6];
     uint16_t limit = sizeof(GlobalDescriptorTable) - 1;
-    uint32_t base = (uint32_t)this;
+    unsigned long base = (unsigned long)this;
+    
+#ifdef __x86_64__
+    // 64-bit GDTR structure (10 bytes: 2 bytes limit + 8 bytes base)
+    uint8_t gdtr[10];
     gdtr[0] = limit & 0xFF;
     gdtr[1] = (limit >> 8) & 0xFF;
     gdtr[2] = base & 0xFF;
     gdtr[3] = (base >> 8) & 0xFF;
     gdtr[4] = (base >> 16) & 0xFF;
     gdtr[5] = (base >> 24) & 0xFF;
+    gdtr[6] = (base >> 32) & 0xFF;
+    gdtr[7] = (base >> 40) & 0xFF;
+    gdtr[8] = (base >> 48) & 0xFF;
+    gdtr[9] = (base >> 56) & 0xFF;
+#else
+    // 32-bit GDTR structure (6 bytes: 2 bytes limit + 4 bytes base)
+    uint8_t gdtr[6];
+    gdtr[0] = limit & 0xFF;
+    gdtr[1] = (limit >> 8) & 0xFF;
+    gdtr[2] = base & 0xFF;
+    gdtr[3] = (base >> 8) & 0xFF;
+    gdtr[4] = (base >> 16) & 0xFF;
+    gdtr[5] = (base >> 24) & 0xFF;
+#endif
     asm volatile("lgdt (%0)" : : "r"(gdtr));
 }
 GlobalDescriptorTable::~GlobalDescriptorTable()

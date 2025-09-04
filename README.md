@@ -31,12 +31,12 @@ Xorix Server Edition is a complete, minimal, multi-architecture operating system
 ### Minimum System Requirements
 - **RAM**: 512MB minimum
 - **Storage**: 512MB for installation
-- **Architecture**: x86, x86_64, or ARM Cortex-A8
+- **Architecture**: x86 (32-bit) - Fully supported
 - **Firmware**: BIOS or UEFI
 
 ### Build Requirements
 - Linux host system for building (Ubuntu, Debian, Fedora, CentOS, Arch, openSUSE supported)
-- Cross-compilation toolchain (automatically installed by dependency script)
+- i686-elf cross-compilation toolchain (automatically installed by dependency script)
 - Build tools: `gcc`, `make`, `grub-mkrescue`, `xorriso` (automatically installed)
 
 **Note**: Use the included `install-dependencies.sh` script to automatically install all required dependencies for your Linux distribution.
@@ -60,19 +60,39 @@ sudo apt install build-essential grub-pc-bin grub-common xorriso
 make dev-setup
 ```
 
-### 2. Build for Your Architecture
+### 2. Build Xorix OS
 ```bash
 # Build x86 kernel and ISO
-make ARCH=x86 iso
+make iso
 
-## Running on Different Platforms
+# Or build just the kernel
+make
+```
 
-- **QEMU (Recommended for Development and Testing)**  
-  Run Xorix in QEMU with:
+---
 
-  ```bash
-  qemu-system-i386 -cdrom xorix.iso
-  ```
+## 🏗️ Architecture Support
+
+### Fully Supported
+- **x86 (32-bit)**: ✅ **Production Ready**
+  - Complete implementation with all features
+  - Real installation system with disk partitioning
+  - 45+ functional commands
+  - GRUB bootloader integration
+  - Reboot functionality with boot mode detection
+  - Simplified build system for easy development
+
+### Build Commands
+```bash
+# Build kernel binary
+make
+
+# Build bootable ISO
+make iso
+
+# Test in QEMU
+make test
+```
 
   QEMU is a fast and flexible emulator supporting multiple architectures.
 

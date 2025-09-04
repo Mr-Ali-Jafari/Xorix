@@ -1,32 +1,61 @@
-# Xorix Server Edition - Main Makefile
-# Multi-architecture build system with complete component integration
-
-# Include multi-architecture build system
-include build/Makefile.multi-arch
-
-# Default target
-.DEFAULT_GOAL := all
+# Xorix Server Edition - x86 Build System
+# Simplified build system for x86 architecture only
 
 # Project information
 PROJECT_NAME = Xorix Server Edition
 VERSION = 1.0
 BUILD_DATE = $(shell date +"%Y-%m-%d %H:%M:%S")
 
-# Additional source directories
-KERNEL_OBJECTS = kernel/src/core/kernel_minimal.o kernel/src/core/memory.o kernel/src/core/gdt.o kernel/src/core/port.o shell/xbash.o
-COMPONENT_SOURCES = $(SHELL_OBJECTS) $(EDITOR_OBJECTS) $(INSTALLER_OBJECTS) $(DRIVER_OBJECTS)
+# x86 toolchain
+CC = i686-elf-gcc
+CXX = i686-elf-g++
+AS = i686-elf-as
+LD = i686-elf-ld
+OBJCOPY = i686-elf-objcopy
 
-# Update objects list to include new kernel
-ALL_OBJECTS := $(CORE_OBJECTS) $(ARCH_OBJECTS) $(COMPONENT_SOURCES)
+# Compiler flags
+CFLAGS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore
+ASFLAGS = --32
+LDFLAGS = -melf_i386
 
-# Override kernel build to use new main kernel
-$(KERNEL_NAME): $(ALL_OBJECTS)
-	@echo "Linking $(KERNEL_NAME) for $(ARCH) with all components..."
+# Include directories
+INCLUDES = -Iinclude -Iinstaller -Idrivers -Ishell -Ieditor -Iarch/x86/include
+
+# Source files
+KERNEL_SOURCES = kernel/src/core/kernel.cpp kernel/src/core/memory.cpp kernel/src/core/gdt.cpp kernel/src/core/port.cpp
+BOOT_SOURCE = arch/x86/boot.s
+
+# Object files
+KERNEL_OBJECTS = $(KERNEL_SOURCES:.cpp=.o)
+BOOT_OBJECT = arch/x86/boot.o
+
+# Output files
+KERNEL_NAME = xorix-x86.bin
+ISO_NAME = xorix-x86.iso
+
+# Default target
+.DEFAULT_GOAL := all
+
+all: $(KERNEL_NAME)
+
+# Compile C++ source files
+%.o: %.cpp
+	@echo "Compiling $< for x86..."
+	$(CXX) $(CFLAGS) $(INCLUDES) -c $< -o $@
+
+# Assemble boot file
+$(BOOT_OBJECT): $(BOOT_SOURCE)
+	@echo "Assembling $< for x86..."
+	$(AS) $(ASFLAGS) -o $@ $<
+
+# Link kernel
+$(KERNEL_NAME): $(KERNEL_OBJECTS) $(BOOT_OBJECT)
+	@echo "Linking $(KERNEL_NAME) for x86..."
 	@echo "Build: $(PROJECT_NAME) v$(VERSION) - $(BUILD_DATE)"
-	$(LD) $(LDFLAGS) -T $(ARCH_DIR)/linker.ld -o $@ $(ALL_OBJECTS)
-	@echo "✓ Built $(KERNEL_NAME) successfully ($(shell stat -c%s $(KERNEL_NAME)) bytes)"
+	$(LD) $(LDFLAGS) -T arch/x86/linker.ld -o $@ $^
+	@echo "✓ Built $(KERNEL_NAME) successfully ($(shell stat -c%s $(KERNEL_NAME) 2>/dev/null || echo 0) bytes)"
 
-# Enhanced ISO creation with proper GRUB configuration
+# Create ISO image
 $(ISO_NAME): $(KERNEL_NAME)
 	@echo "Creating enhanced ISO image $(ISO_NAME)..."
 	mkdir -p iso/boot/grub
@@ -52,156 +81,61 @@ $(ISO_NAME): $(KERNEL_NAME)
 	@echo "}" >> iso/boot/grub/grub.cfg
 	grub-mkrescue --output=$@ iso
 	rm -rf iso
-	@echo "✓ ISO image $(ISO_NAME) created successfully ($(shell stat -c%s $(ISO_NAME)) bytes)"
+	@echo "✓ ISO image $(ISO_NAME) created successfully ($(shell stat -c%s $(ISO_NAME) 2>/dev/null || echo 0) bytes)"
 
-# Enhanced testing with different configurations
-test-normal: $(ISO_NAME)
-	@echo "Testing $(ISO_NAME) in normal mode..."
-ifeq ($(ARCH),x86)
+# Testing targets
+test: $(ISO_NAME)
+	@echo "Testing $(ISO_NAME) in QEMU..."
 	qemu-system-i386 -cdrom $(ISO_NAME) -m 512M -serial stdio -boot d
-endif
-ifeq ($(ARCH),x86_64)
-	qemu-system-x86_64 -cdrom $(ISO_NAME) -m 512M -serial stdio -boot d
-endif
-ifeq ($(ARCH),arm)
-	qemu-system-arm -M versatilepb -kernel $(KERNEL_NAME) -m 512M -serial stdio
-endif
 
 test-debug: $(ISO_NAME)
 	@echo "Testing $(ISO_NAME) in debug mode..."
-ifeq ($(ARCH),x86)
 	qemu-system-i386 -cdrom $(ISO_NAME) -m 512M -serial stdio -boot d -s -S
-endif
-ifeq ($(ARCH),x86_64)
-	qemu-system-x86_64 -cdrom $(ISO_NAME) -m 512M -serial stdio -boot d -s -S
-endif
 
-test-virtualbox: $(ISO_NAME)
-	@echo "Instructions for VirtualBox testing:"
-	@echo "1. Create new VM with $(ARCH) architecture"
-	@echo "2. Set memory to 512MB minimum"
-	@echo "3. Mount $(ISO_NAME) as CD/DVD"
-	@echo "4. Boot from CD/DVD"
+# Build targets
+iso: $(ISO_NAME)
 
-# Development targets
+# Clean targets
+clean:
+	@echo "Cleaning build files..."
+	find . -name "*.o" -delete
+	rm -f $(KERNEL_NAME) $(ISO_NAME)
+	rm -rf iso
+	@echo "Clean complete"
+
+# Development setup
 dev-setup:
 	@echo "Setting up development environment..."
-	@echo "Checking dependencies..."
-	@which gcc > /dev/null || (echo "ERROR: gcc not found" && exit 1)
-	@which make > /dev/null || (echo "ERROR: make not found" && exit 1)
-	@which grub-mkrescue > /dev/null || (echo "ERROR: grub-mkrescue not found" && exit 1)
-	@echo "✓ Basic dependencies found"
-	@echo "Setting up directories..."
-	@mkdir -p build docs installation
-	@echo "✓ Development environment ready"
+	@echo "Run './install-dependencies.sh' to install required dependencies"
 
-# Code quality and analysis
-check-syntax:
-	@echo "Checking syntax for all source files..."
-	@find . -name "*.cpp" -o -name "*.h" | xargs -I {} sh -c 'echo "Checking {}..." && $(CXX) $(CXXFLAGS) -fsyntax-only {}'
-	@echo "✓ Syntax check completed"
-
-analyze-size:
-	@echo "Analyzing component sizes..."
-	@echo "Kernel objects:"
-	@find . -name "*.o" -exec ls -lh {} \; | sort -k5 -hr
+# Help target
+help:
+	@echo "Xorix OS Build System - x86 Architecture"
 	@echo ""
-	@echo "Final binaries:"
-	@ls -lh xorix-*.bin 2>/dev/null || echo "No binaries found"
-	@ls -lh xorix-*.iso 2>/dev/null || echo "No ISO images found"
-
-# Documentation generation
-docs: docs/XORIX_SERVER_EDITION_GUIDE.md
-	@echo "Generating additional documentation..."
-	@echo "# Xorix Server Edition - Build Information" > docs/BUILD_INFO.md
-	@echo "" >> docs/BUILD_INFO.md
-	@echo "**Project**: $(PROJECT_NAME)" >> docs/BUILD_INFO.md
-	@echo "**Version**: $(VERSION)" >> docs/BUILD_INFO.md
-	@echo "**Build Date**: $(BUILD_DATE)" >> docs/BUILD_INFO.md
-	@echo "**Architecture**: $(ARCH)" >> docs/BUILD_INFO.md
-	@echo "" >> docs/BUILD_INFO.md
-	@echo "## Component Status" >> docs/BUILD_INFO.md
-	@echo "- ✓ Keyboard Driver: Complete modular implementation" >> docs/BUILD_INFO.md
-	@echo "- ✓ xbash Shell: Unix-like shell with user management" >> docs/BUILD_INFO.md
-	@echo "- ✓ xnano Editor: Lightweight text editor" >> docs/BUILD_INFO.md
-	@echo "- ✓ Installation System: Single-command installer" >> docs/BUILD_INFO.md
-	@echo "- ✓ Multi-Architecture: x86, x86_64, ARM support" >> docs/BUILD_INFO.md
-	@echo "- ✓ GRUB2 Integration: BIOS/UEFI bootloader" >> docs/BUILD_INFO.md
-	@echo "✓ Documentation generated"
-
-# Packaging and distribution
-package: all-arch docs
-	@echo "Creating distribution package..."
-	@mkdir -p dist/$(PROJECT_NAME)-v$(VERSION)
-	@cp -r docs dist/$(PROJECT_NAME)-v$(VERSION)/
-	@cp xorix-*.bin dist/$(PROJECT_NAME)-v$(VERSION)/ 2>/dev/null || true
-	@cp xorix-*.iso dist/$(PROJECT_NAME)-v$(VERSION)/ 2>/dev/null || true
-	@cp README.md LICENSE dist/$(PROJECT_NAME)-v$(VERSION)/ 2>/dev/null || true
-	@cd dist && tar -czf $(PROJECT_NAME)-v$(VERSION).tar.gz $(PROJECT_NAME)-v$(VERSION)/
-	@echo "✓ Package created: dist/$(PROJECT_NAME)-v$(VERSION).tar.gz"
-
-# Installation to local system
-install-local: $(KERNEL_NAME)
-	@echo "Installing $(PROJECT_NAME) to local system..."
-	@sudo mkdir -p /boot/xorix
-	@sudo cp $(KERNEL_NAME) /boot/xorix/
-	@sudo cp docs/* /boot/xorix/ 2>/dev/null || true
-	@echo "Adding GRUB entry..."
-	@echo "" | sudo tee -a /etc/grub.d/40_custom
-	@echo "menuentry '$(PROJECT_NAME)' {" | sudo tee -a /etc/grub.d/40_custom
-	@echo "    multiboot /boot/xorix/$(KERNEL_NAME)" | sudo tee -a /etc/grub.d/40_custom
-	@echo "    boot" | sudo tee -a /etc/grub.d/40_custom
-	@echo "}" | sudo tee -a /etc/grub.d/40_custom
-	@sudo update-grub
-	@echo "✓ $(PROJECT_NAME) installed to local system"
-
-# Comprehensive clean
-clean-all: clean
-	@echo "Performing comprehensive cleanup..."
-	@rm -rf dist installation
-	@rm -f docs/BUILD_INFO.md
-	@find . -name "*~" -delete
-	@find . -name "*.bak" -delete
-	@find . -name "*.tmp" -delete
-	@echo "✓ Comprehensive cleanup completed"
-
-# Status and information
-status:
-	@echo "=== $(PROJECT_NAME) v$(VERSION) Status ==="
+	@echo "Available targets:"
+	@echo "  all        - Build kernel binary (default)"
+	@echo "  iso        - Build bootable ISO image"
+	@echo "  test       - Test in QEMU emulator"
+	@echo "  test-debug - Test in QEMU with debugging"
+	@echo "  clean      - Clean build files"
+	@echo "  dev-setup  - Setup development environment"
+	@echo "  help       - Show this help message"
 	@echo ""
-	@echo "Architecture: $(ARCH)"
-	@echo "Compiler: $(CXX)"
-	@echo "Build Date: $(BUILD_DATE)"
-	@echo ""
-	@echo "Components:"
-	@echo "  ✓ Keyboard Driver (modular, full scancode support)"
-	@echo "  ✓ xbash Shell (Unix commands, user management)"
-	@echo "  ✓ xnano Editor (lightweight, nano-like)"
-	@echo "  ✓ Installation System (single-command installer)"
-	@echo "  ✓ Filesystem (simple, robust, permissions)"
-	@echo "  ✓ Multi-Architecture (x86, x86_64, ARM)"
-	@echo ""
-	@echo "Build Artifacts:"
-	@ls -la xorix-*.bin 2>/dev/null || echo "  No kernel binaries found"
-	@ls -la xorix-*.iso 2>/dev/null || echo "  No ISO images found"
-	@echo ""
-	@echo "Quick Commands:"
-	@echo "  make ARCH=x86 iso    - Build x86 ISO"
-	@echo "  make test-normal     - Test in QEMU"
-	@echo "  make package         - Create distribution"
-	@echo "  make help            - Show all targets"
+	@echo "Examples:"
+	@echo "  make iso   - Build xorix-x86.iso"
+	@echo "  make test  - Run in QEMU"
+
+.PHONY: all iso test test-debug clean dev-setup help
 
 # Enhanced help with examples
 help:
-	@echo "$(PROJECT_NAME) v$(VERSION) - Build System Help"
+	@echo "$(PROJECT_NAME) v$(VERSION) - x86 Build System Help"
 	@echo ""
 	@echo "USAGE:"
-	@echo "  make [ARCH=<arch>] [target]"
+	@echo "  make [target]"
 	@echo ""
-	@echo "ARCHITECTURES:"
-	@echo "  x86      - 32-bit x86 (i686)"
-	@echo "  x86_64   - 64-bit x86_64"
-	@echo "  arm      - ARM Cortex-A8"
+	@echo "ARCHITECTURE:"
+	@echo "  x86 (32-bit) - Fully supported"
 	@echo ""
 	@echo "MAIN TARGETS:"
 	@echo "  all           - Build kernel for current architecture"

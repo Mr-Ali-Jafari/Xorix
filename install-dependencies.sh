@@ -89,15 +89,21 @@ install_ubuntu_debian() {
     # Cross-compilation toolchain
     sudo apt-get install -y \
         gcc-multilib \
-        g++-multilib
+        g++-multilib \
+        libc6-dev-i386
     
-    # Try to install i686-elf cross-compiler (if available)
+    # Try to install cross-compilers (if available)
     if apt-cache search gcc-i686-linux-gnu | grep -q gcc-i686-linux-gnu; then
         sudo apt-get install -y gcc-i686-linux-gnu g++-i686-linux-gnu
         print_success "Installed i686 cross-compiler from package manager"
     else
         print_warning "i686 cross-compiler not available in package manager"
-        print_status "You may need to build it manually or use gcc-multilib"
+        print_status "Using gcc-multilib for 32-bit compilation"
+    fi
+    
+    # For x86_64, we can use the native 64-bit compiler
+    if [ "$(uname -m)" = "x86_64" ]; then
+        print_success "Native x86_64 compiler available for x86_64 builds"
     fi
     
     # GRUB tools for ISO creation
@@ -284,6 +290,7 @@ main() {
     
     print_status "Starting Xorix OS dependency installation..."
     print_status "This script will install all required tools for building Xorix OS"
+    print_status "Target architecture: x86 (32-bit) - Production ready"
     echo ""
     
     # Check if user wants to continue
