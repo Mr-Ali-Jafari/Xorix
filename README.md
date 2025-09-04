@@ -78,8 +78,8 @@ make ARCH=x86 iso
 
 ## License
 
-This project is licensed under the [Xorix Open License](LICENSE).  
-You are free to use and modify the kernel source code under the condition that it is not used for unethical purposes.
+This project is licensed under the [MIT License](LICENSE).  
+You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software under the terms of the MIT License.
 
 ---
 
