@@ -35,17 +35,25 @@ Xorix Server Edition is a complete, minimal, multi-architecture operating system
 - **Firmware**: BIOS or UEFI
 
 ### Build Requirements
-- Linux host system for building
-- Cross-compilation toolchain (i686-elf-gcc, x86_64-elf-gcc, arm-none-eabi-gcc)
-- Build tools: `gcc`, `make`, `grub-mkrescue`, `xorriso`
+- Linux host system for building (Ubuntu, Debian, Fedora, CentOS, Arch, openSUSE supported)
+- Cross-compilation toolchain (automatically installed by dependency script)
+- Build tools: `gcc`, `make`, `grub-mkrescue`, `xorriso` (automatically installed)
+
+**Note**: Use the included `install-dependencies.sh` script to automatically install all required dependencies for your Linux distribution.
 
 ---
 
 ## 🛠️ Quick Start
 
-### 1. Build System Setup
+### 1. Install Dependencies (Automatic)
 ```bash
-# Install dependencies
+# Run the automatic dependency installer (recommended)
+./install-dependencies.sh
+```
+
+### 1. Build System Setup (Manual)
+```bash
+# Or install dependencies manually
 sudo apt install build-essential grub-pc-bin grub-common xorriso
 
 # Set up development environment
